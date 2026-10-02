@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Patitas Felices</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="bg-emerald-50 min-h-screen flex flex-col">
+    <div id="header"></div>
+
+    <main class="flex-1">
+        <section class="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-12">
+            <div class="max-w-7xl mx-auto px-4 text-center">
+                <h1 class="text-4xl font-extrabold">Finalizar Compra</h1>
+            </div>
+        </section>
+
+        <section class="max-w-7xl mx-auto px-4 py-8">
+            <div id="checkout-content"></div>
+        </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="js/mock-data.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader();
+        document.getElementById('footer').innerHTML = renderFooter();
+        updateNavAuth();
+
+        const items = Cart.get();
+        const container = document.getElementById('checkout-content');
+
+        if (items.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-16">
+                    <div class="text-6xl mb-4">🛒</div>
+                    <h2 class="text-2xl font-bold text-emerald-900 mb-2">No hay productos en el carrito</h2>
+                    <a href="productos.html" class="bg-emerald-700 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-800 transition-colors inline-block mt-4">Ver Productos</a>
+                </div>`;
+        } else {
+            const user = Auth.getCurrentUser();
+            const subtotal = Cart.getTotal();
+
+            container.innerHTML = `
+                <form id="checkout-form" class="grid lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white rounded-xl shadow-md p-6">
+                            <h2 class="text-xl font-bold text-emerald-900 mb-4 flex items-center gap-2">
+                                <span class="w-8 h-8 bg-emerald-700 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                                Dirección de Envío
+                            </h2>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="block text-emerald-800 font-medium mb-1">Dirección completa</label>
+                                    <input type="text" required value="${user?.address || ''}" class="w-full px-4 py-3 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Calle, número, depto/oficina">
+                                </div>
+                                <div>
+                                    <label class="block text-emerald-800 font-medium mb-1">Comuna</label>
+                                    <input type="text" required class="w-full px-4 py-3 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Tu comuna">
+                                </div>
+                                <div>
+                                    <label class="block text-emerald-800 font-medium mb-1">Ciudad</label>
+                                    <input type="text" required class="w-full px-4 py-3 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Tu ciudad">
+                                </div>
+                                <div>
+                                    <label class="block text-emerald-800 font-medium mb-1">Nombre receptor</label>
+                                    <input type="text" required value="${user?.name || ''}" class="w-full px-4 py-3 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                </div>
+                                <div>
+                                    <label class="block text-emerald-800 font-medium mb-1">Teléfono</label>
+                                    <input type="tel" required value="${user?.phone || ''}" class="w-full px-4 py-3 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-md p-6">
+                            <h2 class="text-xl font-bold text-emerald-900 mb-4 flex items-center gap-2">
+                                <span class="w-8 h-8 bg-emerald-700 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                                Tipo de Envío
+                            </h2>
+                            <div class="space-y-3" id="shipping-options">
+                                ${MOCK_DATA.shippingMethods.map(method => `
+                                    <label class="flex items-center gap-4 p-4 border border-emerald-200 rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors">
+                                        <input type="radio" name="shipping" value="${method.id}" data-price="${method.price}" ${method.id === 'standard' ? 'checked' : ''} class="text-emerald-700">
+                                        <div class="flex-1">
+                                            <div class="font-bold text-emerald-900">${method.name}</div>
+                                            <div class="text-sm text-emerald-700">${method.days}</div>
+                                        </div>
+                                        <div class="font-bold text-emerald-700">${method.price === 0 ? 'Gratis' : formatPrice(method.price)}</div>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-md p-6">
+                            <h2 class="text-xl font-bold text-emerald-900 mb-4 flex items-center gap-2">
+                                <span class="w-8 h-8 bg-emerald-700 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                                Medio de Pago
+                            </h2>
+                            <div class="space-y-3" id="payment-options">
+                                ${MOCK_DATA.paymentMethods.map(method => `
+                                    <label class="flex items-center gap-4 p-4 border border-emerald-200 rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors">
+                                        <input type="radio" name="payment" value="${method.id}" ${method.id === 'credit' ? 'checked' : ''} class="text-emerald-700">
+                                        <span class="text-2xl">${method.icon}</span>
+                                        <span class="font-bold text-emerald-900">${method.name}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-6 h-fit sticky top-20">
+                        <h2 class="text-xl font-bold text-emerald-900 mb-4">Tu Pedido</h2>
+                        <div class="space-y-3 mb-4 max-h-60 overflow-y-auto">
+                            ${items.map(item => `
+                                <div class="flex items-center gap-3">
+                                    <img src="${item.image}" alt="${item.name}" class="w-12 h-12 object-cover rounded">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-emerald-900 truncate">${item.name}</p>
+                                        <p class="text-sm text-emerald-600">${item.quantity} x ${formatPrice(item.price)}</p>
+                                    </div>
+                                    <p class="text-sm font-bold text-emerald-700">${formatPrice(item.price * item.quantity)}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="border-t border-emerald-100 pt-4 space-y-2">
+                            <div class="flex justify-between text-emerald-800">
+                                <span>Subtotal</span>
+                                <span id="summary-subtotal">${formatPrice(subtotal)}</span>
+                            </div>
+                            <div class="flex justify-between text-emerald-800">
+                                <span>Envío</span>
+                                <span id="summary-shipping">${formatPrice(2990)}</span>
+                            </div>
+                            <div class="flex justify-between text-xl font-bold text-emerald-900 pt-2 border-t border-emerald-100">
+                                <span>Total</span>
+                                <span id="summary-total">${formatPrice(subtotal + 2990)}</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-700 text-white py-3 rounded-lg font-bold hover:bg-emerald-800 transition-colors mt-6">Confirmar Compra</button>
+                    </div>
+                </form>`;
+
+            document.querySelectorAll('input[name="shipping"]').forEach(radio => {
+                radio.addEventListener('change', updateTotals);
+            });
+
+            function updateTotals() {
+                const selected = document.querySelector('input[name="shipping"]:checked');
+                const shippingPrice = parseInt(selected.dataset.price);
+                const newTotal = subtotal + shippingPrice;
+                document.getElementById('summary-shipping').textContent = shippingPrice === 0 ? 'Gratis' : formatPrice(shippingPrice);
+                document.getElementById('summary-total').textContent = formatPrice(newTotal);
+            }
+
+            document.getElementById('checkout-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const selectedShipping = document.querySelector('input[name="shipping"]:checked');
+                const selectedPayment = document.querySelector('input[name="payment"]:checked');
+                const shippingPrice = parseInt(selectedShipping.dataset.price);
+                const shippingName = selectedShipping.closest('label').querySelector('.font-bold.text-emerald-900, div .font-bold').textContent;
+                const paymentName = selectedPayment.closest('label').querySelector('.font-bold.text-emerald-900, span.font-bold').textContent;
+
+                const order = {
+                    id: generateOrderId(),
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'Procesando',
+                    items: items,
+                    subtotal: subtotal,
+                    shipping: shippingPrice,
+                    total: subtotal + shippingPrice,
+                    shippingMethod: selectedShipping.value === 'pickup' ? 'Retiro en tienda' : selectedShipping.value === 'express' ? 'Express' : 'Estándar',
+                    paymentMethod: paymentName
+                };
+
+                localStorage.setItem('mascotas_last_order', JSON.stringify(order));
+
+                const orders = JSON.parse(localStorage.getItem('mascotas_orders') || '[]');
+                orders.push(order);
+                localStorage.setItem('mascotas_orders', JSON.stringify(orders));
+
+                Cart.clear();
+                window.location.href = `confirmacion.html?orderId=${order.id}`;
+            });
+        }
+    </script>
+</body>
+</html>
