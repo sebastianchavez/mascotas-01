@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - Patitas Felices</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="bg-emerald-50 min-h-screen flex flex-col">
+    <div id="header"></div>
+
+    <main class="flex-1">
+        <section class="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-12">
+            <div class="max-w-7xl mx-auto px-4 text-center">
+                <h1 class="text-4xl font-extrabold mb-2">Nuestros Productos</h1>
+                <p class="text-emerald-100">Descubre toda nuestra variedad para consentir a tus mascotas</p>
+            </div>
+        </section>
+
+        <section class="max-w-7xl mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row gap-6">
+                <aside class="md:w-64 shrink-0">
+                    <div class="bg-white rounded-xl shadow-md p-6 sticky top-20">
+                        <h3 class="font-bold text-emerald-900 mb-4">Buscar</h3>
+                        <input type="text" id="search-input" placeholder="Buscar productos..." class="w-full px-4 py-2 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-6">
+
+                        <h3 class="font-bold text-emerald-900 mb-4">Categorías</h3>
+                        <div id="category-filters" class="space-y-2"></div>
+
+                        <h3 class="font-bold text-emerald-900 mt-6 mb-4">Precio</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 text-emerald-800 cursor-pointer">
+                                <input type="radio" name="price" value="all" checked class="text-emerald-700"> Todos
+                            </label>
+                            <label class="flex items-center gap-2 text-emerald-800 cursor-pointer">
+                                <input type="radio" name="price" value="0-5000" class="text-emerald-700"> Menos de $5.000
+                            </label>
+                            <label class="flex items-center gap-2 text-emerald-800 cursor-pointer">
+                                <input type="radio" name="price" value="5000-15000" class="text-emerald-700"> $5.000 - $15.000
+                            </label>
+                            <label class="flex items-center gap-2 text-emerald-800 cursor-pointer">
+                                <input type="radio" name="price" value="15000-999999" class="text-emerald-700"> Más de $15.000
+                            </label>
+                        </div>
+
+                        <h3 class="font-bold text-emerald-900 mt-6 mb-4">Ordenar por</h3>
+                        <select id="sort-select" class="w-full px-4 py-2 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="name">Nombre A-Z</option>
+                            <option value="price-asc">Precio: Menor a Mayor</option>
+                            <option value="price-desc">Precio: Mayor a Menor</option>
+                            <option value="rating">Mejor Valorados</option>
+                        </select>
+                    </div>
+                </aside>
+
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-6">
+                        <p id="results-count" class="text-emerald-700"></p>
+                    </div>
+                    <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    <div id="no-results" class="hidden text-center py-16">
+                        <div class="text-6xl mb-4">🔍</div>
+                        <h3 class="text-xl font-bold text-emerald-900 mb-2">No se encontraron productos</h3>
+                        <p class="text-emerald-700">Intenta con otros filtros o términos de búsqueda</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="js/mock-data.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader('productos');
+        document.getElementById('footer').innerHTML = renderFooter();
+        updateNavAuth();
+
+        let activeCategory = getUrlParam('category') ? parseInt(getUrlParam('category')) : null;
+        let searchQuery = '';
+        let priceRange = 'all';
+        let sortBy = 'name';
+
+        const categoryFilters = document.getElementById('category-filters');
+        categoryFilters.innerHTML = `
+            <label class="flex items-center gap-2 text-emerald-800 cursor-pointer">
+                <input type="radio" name="category" value="all" ${!activeCategory ? 'checked' : ''} class="text-emerald-700"> Todas
+            </label>
+            ${MOCK_DATA.categories.map(cat => `
+                <label class="flex items-center gap-2 text-emerald-800 cursor-pointer">
+                    <input type="radio" name="category" value="${cat.id}" ${activeCategory === cat.id ? 'checked' : ''} class="text-emerald-700">
+                    ${cat.icon} ${cat.name}
+                </label>
+            `).join('')}
+        `;
+
+        function filterAndRender() {
+            let products = [...MOCK_DATA.products];
+
+            if (activeCategory) {
+                products = products.filter(p => p.categoryId === activeCategory);
+            }
+
+            if (searchQuery) {
+                products = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+            }
+
+            if (priceRange !== 'all') {
+                const [min, max] = priceRange.split('-').map(Number);
+                products = products.filter(p => p.price >= min && p.price <= max);
+            }
+
+            switch (sortBy) {
+                case 'name': products.sort((a, b) => a.name.localeCompare(b.name)); break;
+                case 'price-asc': products.sort((a, b) => a.price - b.price); break;
+                case 'price-desc': products.sort((a, b) => b.price - a.price); break;
+                case 'rating': products.sort((a, b) => b.rating - a.rating); break;
+            }
+
+            const grid = document.getElementById('products-grid');
+            const noResults = document.getElementById('no-results');
+            const count = document.getElementById('results-count');
+
+            if (products.length === 0) {
+                grid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                count.textContent = '';
+            } else {
+                grid.classList.remove('hidden');
+                noResults.classList.add('hidden');
+                count.textContent = `${products.length} producto${products.length !== 1 ? 's' : ''} encontrado${products.length !== 1 ? 's' : ''}`;
+                grid.innerHTML = products.map(p => renderProductCard(p)).join('');
+            }
+        }
+
+        categoryFilters.addEventListener('change', (e) => {
+            if (e.target.name === 'category') {
+                activeCategory = e.target.value === 'all' ? null : parseInt(e.target.value);
+                filterAndRender();
+            }
+        });
+
+        document.getElementById('search-input').addEventListener('input', debounce((e) => {
+            searchQuery = e.target.value;
+            filterAndRender();
+        }, 300));
+
+        document.querySelectorAll('input[name="price"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                priceRange = e.target.value;
+                filterAndRender();
+            });
+        });
+
+        document.getElementById('sort-select').addEventListener('change', (e) => {
+            sortBy = e.target.value;
+            filterAndRender();
+        });
+
+        filterAndRender();
+    </script>
+</body>
+</html>

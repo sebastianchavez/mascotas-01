@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Políticas de Privacidad - Patitas Felices</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="bg-emerald-50 min-h-screen flex flex-col">
+    <div id="header"></div>
+
+    <main class="flex-1">
+        <section class="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-12">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <h1 class="text-4xl font-extrabold">Políticas de Privacidad</h1>
+                <p class="text-emerald-100 mt-2">Última actualización: Septiembre 2026</p>
+            </div>
+        </section>
+
+        <section class="max-w-4xl mx-auto px-4 py-12">
+            <div class="bg-white rounded-xl shadow-md p-8 prose prose-emerald max-w-none">
+                <h2 class="text-2xl font-bold text-emerald-900 mb-4">1. Introducción</h2>
+                <p class="text-emerald-800 mb-6">En Patitas Felices, nos comprometemos a proteger la privacidad de nuestros clientes y sus mascotas. Esta política de privacidad describe cómo recopilamos, usamos y protegemos su información personal cuando utiliza nuestro sitio web y servicios.</p>
+
+                <h2 class="text-2xl font-bold text-emerald-900 mb-4">2. Información que Recopilamos</h2>
+                <p class="text-emerald-800 mb-4">Recopilamos la siguiente información personal:</p>
+                <ul class="list-disc list-inside text-emerald-800 mb-6 space-y-2">
+                    <li>Nombre completo</li>
+                    <li>Dirección de correo electrónico</li>
+                    <li>Número de teléfono</li>
+                    <li>Dirección de envío</li>
+                    <li>Información de pago (procesada de forma segura)</li>
+                    <li>Historial de compras y preferencias</li>
+                </ul>
+
+                <h2 class="text-2xl font-bold text-emerald-900 mb-4">3. Uso de la Información</h2>
+                <p class="text-emerald-800 mb-4">Utilizamos su información para:</p>
+                <ul class="list-disc list-inside text-emerald-800 mb-6 space-y-2">
+                    <li>Procesar y enviar sus pedidos</li>
+                    <li>Comunicarnos con usted sobre su cuenta y pedidos</li>
+                    <li>Ofrecer asesoría personalizada para sus mascotas</li>
+                    <li>Mejorar nuestros productos y servicios</li>
+                    <li>Enviar promociones y ofertas especiales (con su consentimiento)</li>
+                    <li>Cumplir con obligaciones legales</li>
+                </ul>
+
+                <h2 class="text-2xl font-bold text-emerald-900 mb-4">4. Protección de Datos</h2>
+                <p class="text-emerald-800 mb-6">Implementamos medidas de seguridad técnicas y organizativas para proteger su información personal contra acceso no autorizado, alteración, divulgación o destrucción.</p>
+
+                <h2 class="text-2xl font-bold text-emerald-900 mb-4">5. Compartición de Información</h2>
+                <p class="text-emerald-800 mb-6">No vendemos ni alquilamos su información personal a terceros. Solo compartimos información con proveedores de servicios de confianza que nos ayudan a operar nuestro negocio (empresas de envío, procesadores de pago).</p>
+
+                <h2 class="text-2xl font-bold text-emerald-900 mb-4">6. Sus Derechos</h2>
+                <p class="text-emerald-800 mb-4">Usted tiene derecho a:</p>
+                <ul class="list-disc list-inside text-emerald-800 mb-6 space-y-2">
+                    <li>Acceder a su información personal</li>
+                    <li>Corregir información inexacta</li>
+                    <li>Solicitar la eliminación de sus datos</li>
+                    <li>Oponerse al procesamiento de sus datos</li>
+                    <li>Retirar su consentimiento en cualquier momento</li>
+                </ul>
+
+                <h2 class="text-2xl font-bold text-emerald-900 mb-4">7. Cookies</h2>
+                <p class="text-emerald-800 mb-6">Utilizamos cookies para mejorar su experiencia de navegación. Puede configurar su navegador para rechazar cookies, aunque esto puede afectar la funcionalidad del sitio.</p>
+
+                <h2 class="text-2xl font-bold text-emerald-900 mb-4">8. Contacto</h2>
+                <p class="text-emerald-800">Si tiene preguntas sobre esta política de privacidad, contáctenos en: <strong>privacidad@patitasfelices.cl</strong></p>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="js/mock-data.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader();
+        document.getElementById('footer').innerHTML = renderFooter();
+        updateNavAuth();
+    </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Compra - Patitas Felices</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="bg-emerald-50 min-h-screen flex flex-col">
+    <div id="header"></div>
+
+    <main class="flex-1">
+        <section class="max-w-4xl mx-auto px-4 py-12">
+            <div id="confirmation-content"></div>
+        </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="js/mock-data.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.getElementById('header').innerHTML = renderHeader();
+        document.getElementById('footer').innerHTML = renderFooter();
+        updateNavAuth();
+
+        const orderId = getUrlParam('orderId');
+        const order = JSON.parse(localStorage.getItem('mascotas_last_order') || 'null');
+        const container = document.getElementById('confirmation-content');
+
+        if (!order) {
+            container.innerHTML = `
+                <div class="text-center py-16">
+                    <div class="text-6xl mb-4">📦</div>
+                    <h2 class="text-2xl font-bold text-emerald-900 mb-2">No se encontró el pedido</h2>
+                    <a href="index.html" class="bg-emerald-700 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-800 transition-colors inline-block mt-4">Volver al Inicio</a>
+                </div>`;
+        } else {
+            container.innerHTML = `
+                <div class="text-center mb-8 animate-fade-in">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-emerald-900 mb-2">¡Compra Confirmada!</h1>
+                    <p class="text-emerald-700">Tu pedido ha sido procesado exitosamente</p>
+                </div>
+
+                <div id="receipt" class="bg-white rounded-xl shadow-md p-8 mb-8">
+                    <div class="text-center border-b border-emerald-100 pb-6 mb-6">
+                        <div class="flex items-center justify-center gap-2 mb-2">
+                            <span class="text-3xl">🐾</span>
+                            <span class="text-2xl font-bold text-emerald-900">Patitas Felices</span>
+                        </div>
+                        <p class="text-emerald-700 text-sm">Comprobante de Compra</p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h3 class="font-bold text-emerald-900 mb-2">N° de Pedido</h3>
+                            <p class="text-emerald-800 text-lg font-mono font-bold">${order.id}</p>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-emerald-900 mb-2">Fecha</h3>
+                            <p class="text-emerald-800">${formatDate(order.date)}</p>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-emerald-900 mb-2">Método de Envío</h3>
+                            <p class="text-emerald-800">${order.shippingMethod}</p>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-emerald-900 mb-2">Medio de Pago</h3>
+                            <p class="text-emerald-800">${order.paymentMethod}</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-emerald-100 pt-6">
+                        <h3 class="font-bold text-emerald-900 mb-4">Productos</h3>
+                        <div class="space-y-3">
+                            ${order.items.map(item => `
+                                <div class="flex items-center gap-3">
+                                    <img src="${item.image}" alt="${item.name}" class="w-14 h-14 object-cover rounded">
+                                    <div class="flex-1">
+                                        <p class="font-medium text-emerald-900">${item.name}</p>
+                                        <p class="text-sm text-emerald-600">${item.quantity} x ${formatPrice(item.price)}</p>
+                                    </div>
+                                    <p class="font-bold text-emerald-700">${formatPrice(item.price * item.quantity)}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="border-t border-emerald-100 pt-6 mt-6 space-y-2">
+                        <div class="flex justify-between text-emerald-800">
+                            <span>Subtotal</span>
+                            <span>${formatPrice(order.subtotal)}</span>
+                        </div>
+                        <div class="flex justify-between text-emerald-800">
+                            <span>Envío</span>
+                            <span>${order.shipping === 0 ? 'Gratis' : formatPrice(order.shipping)}</span>
+                        </div>
+                        <div class="flex justify-between text-xl font-bold text-emerald-900 pt-2 border-t border-emerald-100">
+                            <span>Total</span>
+                            <span>${formatPrice(order.total)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4 no-print">
+                    <button onclick="window.print()" class="bg-emerald-700 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-800 transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        Imprimir Comprobante
+                    </button>
+                    <a href="perfil.html" class="bg-white text-emerald-700 border-2 border-emerald-700 px-8 py-3 rounded-lg font-bold hover:bg-emerald-100 transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        Ver Historial de Pedidos
+                    </a>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
